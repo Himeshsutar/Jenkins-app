@@ -2,36 +2,50 @@ pipeline {
     agent {
         docker {
             image 'node:18'
-            args '-p 3000:3000'  // if you need to expose port
+            args '-p 3000:3000'
         }
     }
 
+    environment {
+        IMAGE_NAME = 'jenkins-node-demo'
+        CONTAINER_NAME = 'node-app'
+    }
+
     stages {
-        stage('Install Dependencies') {
+        stage('Build') {
             steps {
                 echo 'Installing dependencies...'
                 sh 'npm install'
             }
         }
 
-        stage('Run Unit Tests') {
+        stage('Test') {
             steps {
                 echo 'Running tests (optional)...'
                 sh 'echo "No tests configured"'
+                // Replace with: sh 'npm test' when tests are added
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Docker Build') {
             steps {
                 echo 'Building Docker image...'
-                sh 'docker build -t jenkins-node-demo .'
+                sh "docker build -t ${IMAGE_NAME} ."
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Clean up') {
+            steps {
+                echo 'Stopping and removing any existing container...'
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
+            }
+        }
+
+        stage('Deploy') {
             steps {
                 echo 'Running Docker container...'
-                sh 'docker run -d -p 3000:3000 --name node-app jenkins-node-demo'
+                sh "docker run -d -p 3000:3000 --name ${CONTAINER_NAME} ${IMAGE_NAME}"
             }
         }
     }
