@@ -1,10 +1,11 @@
 const http = require('http');
+const port = 3000;
 
 const server = http.createServer((req, res) => {
-  res.end('🚀 Hello from Jenkins + Docker Node App!');
+  res.statusCode = 200;
+  res.end('Hello from Node app running in Docker via Jenkins!\n');
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+server.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
 });
