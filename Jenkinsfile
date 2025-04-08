@@ -1,23 +1,24 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18'
+            args '-p 3000:3000'
+        }
+    }
 
     environment {
-        IMAGE_NAME = 'jenkins-node-demo'
-        CONTAINER_NAME = 'node-app'
-        // Optionally prepend Node.js path if needed
-        // PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/your/node/path:$PATH"
+        APP_NAME = 'jenkins-node-demo'
     }
 
     stages {
-
         stage('Debug PATH') {
             steps {
                 echo 'Checking environment path and binaries...'
                 sh 'echo $PATH'
-                sh 'which node'
-                sh 'which npm'
-                sh 'node -v || echo "Node not found"'
-                sh 'npm -v || echo "npm not found"'
+                sh 'which node || echo node not found'
+                sh 'which npm || echo npm not found'
+                sh 'node -v || echo node not working'
+                sh 'npm -v || echo npm not working'
             }
         }
 
@@ -30,31 +31,25 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo 'Running tests (optional)...'
+                echo 'Running tests...'
                 sh 'echo "No tests configured"'
-                // Replace with: sh 'npm test'
             }
         }
 
         stage('Docker Build') {
             steps {
                 echo 'Building Docker image...'
-                sh "docker build -t ${IMAGE_NAME} ."
-            }
-        }
-
-        stage('Clean up') {
-            steps {
-                echo 'Stopping and removing any existing container...'
-                sh "docker stop ${CONTAINER_NAME} || true"
-                sh "docker rm ${CONTAINER_NAME} || true"
+                sh 'docker build -t $APP_NAME .'
             }
         }
 
         stage('Deploy') {
             steps {
                 echo 'Running Docker container...'
-                sh "docker run -d -p 3000:3000 --name ${CONTAINER_NAME} ${IMAGE_NAME}"
+                sh '''
+                docker rm -f node-app || true
+                docker run -d -p 3000:3000 --name node-app $APP_NAME
+                '''
             }
         }
     }
