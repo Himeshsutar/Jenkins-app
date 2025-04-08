@@ -4,9 +4,23 @@ pipeline {
     environment {
         IMAGE_NAME = 'jenkins-node-demo'
         CONTAINER_NAME = 'node-app'
+        // Optionally prepend Node.js path if needed
+        // PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/your/node/path:$PATH"
     }
 
     stages {
+
+        stage('Debug PATH') {
+            steps {
+                echo 'Checking environment path and binaries...'
+                sh 'echo $PATH'
+                sh 'which node'
+                sh 'which npm'
+                sh 'node -v || echo "Node not found"'
+                sh 'npm -v || echo "npm not found"'
+            }
+        }
+
         stage('Build') {
             steps {
                 echo 'Installing dependencies...'
@@ -18,6 +32,7 @@ pipeline {
             steps {
                 echo 'Running tests (optional)...'
                 sh 'echo "No tests configured"'
+                // Replace with: sh 'npm test'
             }
         }
 
@@ -30,7 +45,7 @@ pipeline {
 
         stage('Clean up') {
             steps {
-                echo 'Stopping and removing existing container...'
+                echo 'Stopping and removing any existing container...'
                 sh "docker stop ${CONTAINER_NAME} || true"
                 sh "docker rm ${CONTAINER_NAME} || true"
             }
