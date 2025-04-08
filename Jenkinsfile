@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18'
-            args '-p 3000:3000'
-        }
-    }
+    agent any
 
     environment {
         IMAGE_NAME = 'jenkins-node-demo'
@@ -23,7 +18,6 @@ pipeline {
             steps {
                 echo 'Running tests (optional)...'
                 sh 'echo "No tests configured"'
-                // Replace with: sh 'npm test' when tests are added
             }
         }
 
@@ -36,7 +30,7 @@ pipeline {
 
         stage('Clean up') {
             steps {
-                echo 'Stopping and removing any existing container...'
+                echo 'Stopping and removing existing container...'
                 sh "docker stop ${CONTAINER_NAME} || true"
                 sh "docker rm ${CONTAINER_NAME} || true"
             }
