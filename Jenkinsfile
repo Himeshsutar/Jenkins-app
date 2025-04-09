@@ -1,29 +1,60 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "himeshsutar/Jenkins-app"
+        IMAGE_TAG = "latest"
+    }
+
     stages {
-        stage('Install Dependencies') {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Himeshsutar/Jenkins-app'
+            }
+        }
+
+        stage('Build') {
             steps {
                 sh 'npm install'
             }
         }
 
-        stage('Run Tests') {
+        stage('Test') {
             steps {
-                sh 'npm test || echo "No tests configured"'
+                // Replace with your test command
+                sh 'npm test || echo "No tests found. Skipping."'
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t jenkins-node-demo .'
+                sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh 'echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin'
+                    sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'docker run -d -p 3000:3000 --name node-app jenkins-node-demo || true'
+                echo 'Deploying the application...'
+                // Add your deployment logic here, e.g., run container or update server
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed.'
         }
     }
 }
