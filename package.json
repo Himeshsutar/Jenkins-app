@@ -1,9 +1,11 @@
 {
-    "name": "jenkins-node-demo",
-    "version": "1.0.0",
-    "main": "app.js",
-    "scripts": {
-      "start": "node app.js"
-    }
-  }
-  
+  "name": "ci-cd-demo",
+  "version": "1.0.0",
+  "description": "Simple Node.js app for Jenkins CI/CD pipeline",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Running tests...\" && exit 0"
+  },
+  "dependencies": {}
+}

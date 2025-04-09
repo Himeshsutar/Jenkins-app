@@ -1,69 +1,33 @@
 pipeline {
-    agent none
-
-    environment {
-        IMAGE_NAME = "himeshsutar/Jenkins-app"
-        IMAGE_TAG = "latest"
-    }
+    agent any
 
     stages {
-        stage('Checkout') {
-            agent any
-            steps {
-                git branch: 'main', url: 'https://github.com/Himeshsutar/Jenkins-app.git'
-            }
-        }
-
         stage('Build') {
-            agent {
-                docker { image 'node:18' }
-            }
             steps {
+                echo 'Building the project...'
                 sh 'npm install'
             }
         }
 
         stage('Test') {
-            agent {
-                docker { image 'node:18' }
-            }
             steps {
-                sh 'npm test || echo "No tests found. Skipping."'
+                echo 'Running tests...'
+                sh 'npm test'
             }
         }
 
         stage('Docker Build') {
-            agent any
             steps {
-                sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
+                echo 'Building Docker image...'
+                sh 'docker build -t ci-cd-demo .'
             }
         }
 
-        stage('Docker Push') {
-            agent any
+        stage('Docker Run') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh 'echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin'
-                    sh "docker push $IMAGE_NAME:$IMAGE_TAG"
-                }
+                echo 'Running Docker container...'
+                sh 'docker run -d -p 3000:3000 --name ci-cd-container ci-cd-demo'
             }
-        }
-
-        stage('Deploy') {
-            agent any
-            steps {
-                echo 'Deploying the application...'
-                // Your deploy logic
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline completed successfully.'
-        }
-        failure {
-            echo 'Pipeline failed.'
         }
     }
 }
