@@ -30,13 +30,13 @@ pipeline {
 
         stage('Docker Build') {
             steps {
+                // Use Jenkins host for Docker commands (not inside node container)
                 sh "docker build -t $IMAGE_NAME ."
             }
         }
 
         stage('Docker Run') {
             steps {
-                // Stop existing container if running (optional)
                 sh 'docker rm -f my-node-app || true'
                 sh 'docker run -d -p 3000:3000 --name my-node-app my-node-app'
             }
@@ -45,10 +45,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully.'
+            echo '✅ Pipeline completed successfully.'
         }
         failure {
-            echo 'Pipeline failed.'
+            echo '❌ Pipeline failed.'
         }
     }
 }
