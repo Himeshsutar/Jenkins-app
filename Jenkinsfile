@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent none
 
     environment {
         IMAGE_NAME = "himeshsutar/Jenkins-app"
@@ -8,31 +8,39 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            agent any
             steps {
-                git branch: 'main', url: 'https://github.com/Himeshsutar/Jenkins-app'
+                git branch: 'main', url: 'https://github.com/Himeshsutar/Jenkins-app.git'
             }
         }
 
         stage('Build') {
+            agent {
+                docker { image 'node:18' }
+            }
             steps {
                 sh 'npm install'
             }
         }
 
         stage('Test') {
+            agent {
+                docker { image 'node:18' }
+            }
             steps {
-                // Replace with your test command
                 sh 'npm test || echo "No tests found. Skipping."'
             }
         }
 
         stage('Docker Build') {
+            agent any
             steps {
                 sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
             }
         }
 
         stage('Docker Push') {
+            agent any
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh 'echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin'
@@ -42,9 +50,10 @@ pipeline {
         }
 
         stage('Deploy') {
+            agent any
             steps {
                 echo 'Deploying the application...'
-                // Add your deployment logic here, e.g., run container or update server
+                // Your deploy logic
             }
         }
     }
