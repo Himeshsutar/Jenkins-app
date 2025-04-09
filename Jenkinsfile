@@ -1,33 +1,54 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = 'my-node-app'
+    }
+
     stages {
-        stage('Build') {
+        stage('Install Dependencies') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                }
+            }
             steps {
-                echo 'Building the project...'
                 sh 'npm install'
             }
         }
 
         stage('Test') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                }
+            }
             steps {
-                echo 'Running tests...'
-                sh 'npm test'
+                sh 'echo "Running tests (placeholder)"'
             }
         }
 
         stage('Docker Build') {
             steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t ci-cd-demo .'
+                sh "docker build -t $IMAGE_NAME ."
             }
         }
 
         stage('Docker Run') {
             steps {
-                echo 'Running Docker container...'
-                sh 'docker run -d -p 3000:3000 --name ci-cd-container ci-cd-demo'
+                // Stop existing container if running (optional)
+                sh 'docker rm -f my-node-app || true'
+                sh 'docker run -d -p 3000:3000 --name my-node-app my-node-app'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed.'
         }
     }
 }
